@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import "./App.css";
 
 type Assignment = {
@@ -9,6 +9,9 @@ type Assignment = {
   priority: "Low" | "Medium" | "High";
   completed: boolean;
 };
+
+type FilterOption = "All" | "Active" | "Completed";
+type SortOption = "Due Date" | "Priority";
 
 function App() {
   const [assignments, setAssignments] = useState<Assignment[]>([
@@ -34,8 +37,10 @@ function App() {
   const [course, setCourse] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
+  const [filter, setFilter] = useState<FilterOption>("All");
+  const [sortOption, setSortOption] = useState<SortOption>("Due Date");
 
-  function addAssignment(event: React.FormEvent) {
+  function addAssignment(event: FormEvent) {
     event.preventDefault();
 
     if (!title || !course || !dueDate) {
@@ -69,20 +74,63 @@ function App() {
   }
 
   function deleteAssignment(id: number) {
-  setAssignments(assignments.filter((assignment) => assignment.id !== id));
-}
+    setAssignments(assignments.filter((assignment) => assignment.id !== id));
+  }
 
-const totalAssignments = assignments.length;
-const completedAssignments = assignments.filter(
-  (assignment) => assignment.completed
-).length;
-const remainingAssignments = totalAssignments - completedAssignments;
+  const totalAssignments = assignments.length;
+  const completedAssignments = assignments.filter(
+    (assignment) => assignment.completed
+  ).length;
+  const remainingAssignments = totalAssignments - completedAssignments;
+
+  const priorityOrder = {
+    High: 3,
+    Medium: 2,
+    Low: 1,
+  };
+
+  const filteredAssignments = assignments.filter((assignment) => {
+    if (filter === "Active") {
+      return !assignment.completed;
+    }
+
+    if (filter === "Completed") {
+      return assignment.completed;
+    }
+
+    return true;
+  });
+
+  const sortedAssignments = [...filteredAssignments].sort((a, b) => {
+    if (sortOption === "Priority") {
+      return priorityOrder[b.priority] - priorityOrder[a.priority];
+    }
+
+    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+  });
 
   return (
     <main className="app">
       <section className="hero">
         <h1>Study Planner</h1>
         <p>Track assignments, due dates, priorities, and progress.</p>
+      </section>
+
+      <section className="stats">
+        <div className="stat-card">
+          <span>Total</span>
+          <strong>{totalAssignments}</strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Completed</span>
+          <strong>{completedAssignments}</strong>
+        </div>
+
+        <div className="stat-card">
+          <span>Remaining</span>
+          <strong>{remainingAssignments}</strong>
+        </div>
       </section>
 
       <section className="dashboard">
@@ -126,33 +174,71 @@ const remainingAssignments = totalAssignments - completedAssignments;
         </div>
 
         <div className="card">
-          <h2>Assignments</h2>
+          <div className="assignment-header">
+            <h2>Assignments</h2>
+
+            <div className="controls">
+              <select
+                value={filter}
+                onChange={(event) =>
+                  setFilter(event.target.value as FilterOption)
+                }
+              >
+                <option value="All">All</option>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+              </select>
+
+              <select
+                value={sortOption}
+                onChange={(event) =>
+                  setSortOption(event.target.value as SortOption)
+                }
+              >
+                <option value="Due Date">Sort by Due Date</option>
+                <option value="Priority">Sort by Priority</option>
+              </select>
+            </div>
+          </div>
 
           <div className="assignment-list">
-            {assignments.map((assignment) => (
-              <article
-                key={assignment.id}
-                className={`assignment ${
-                  assignment.completed ? "completed" : ""
-                }`}
-              >
-                <div>
-                  <h3>{assignment.title}</h3>
-                  <p>{assignment.course}</p>
-                  <p>Due: {assignment.dueDate}</p>
-                </div>
+            {sortedAssignments.length === 0 ? (
+              <p className="empty-message">No assignments match this filter.</p>
+            ) : (
+              sortedAssignments.map((assignment) => (
+                <article
+                  key={assignment.id}
+                  className={`assignment ${
+                    assignment.completed ? "completed" : ""
+                  }`}
+                >
+                  <div>
+                    <h3>{assignment.title}</h3>
+                    <p>{assignment.course}</p>
+                    <p>Due: {assignment.dueDate}</p>
+                  </div>
 
-                <div className="assignment-actions">
-                  <span className={`priority ${assignment.priority.toLowerCase()}`}>
-                    {assignment.priority}
-                  </span>
+                  <div className="assignment-actions">
+                    <span
+                      className={`priority ${assignment.priority.toLowerCase()}`}
+                    >
+                      {assignment.priority}
+                    </span>
 
-                  <button onClick={() => toggleCompleted(assignment.id)}>
-                    {assignment.completed ? "Undo" : "Done"}
-                  </button>
-                </div>
-              </article>
-            ))}
+                    <button onClick={() => toggleCompleted(assignment.id)}>
+                      {assignment.completed ? "Undo" : "Done"}
+                    </button>
+
+                    <button
+                      className="delete-button"
+                      onClick={() => deleteAssignment(assignment.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </div>
       </section>

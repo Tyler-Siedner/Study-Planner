@@ -146,3 +146,88 @@ button:hover {
     font-size: 36px;
   }
 }
+
+.stats {
+  max-width: 1000px;
+  margin: 0 auto 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.stat-card span {
+  display: block;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.stat-card strong {
+  font-size: 30px;
+  color: #111827;
+}
+
+.delete-button {
+  background: #dc2626;
+}
+
+.delete-button:hover {
+  background: #b91c1c;
+}
+
+@media (max-width: 800px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.assignment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.assignment-header h2 {
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.controls select {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: white;
+  font-size: 14px;
+}
+
+.empty-message {
+  color: #6b7280;
+  text-align: center;
+  padding: 24px;
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+}
+
+@media (max-width: 800px) {
+  .assignment-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+}
