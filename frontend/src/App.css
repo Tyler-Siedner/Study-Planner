@@ -231,3 +231,8 @@ button:hover {
     flex-direction: column;
   }
 }
+
+.editing-message {
+  color: #2563eb;
+  font-weight: bold;
+}

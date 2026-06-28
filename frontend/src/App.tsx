@@ -51,6 +51,9 @@ function App() {
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
   const [filter, setFilter] = useState<FilterOption>("All");
   const [sortOption, setSortOption] = useState<SortOption>("Due Date");
+  const [editingAssignmentId, setEditingAssignmentId] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     localStorage.setItem("assignments", JSON.stringify(assignments));
@@ -63,16 +66,35 @@ function App() {
       return;
     }
 
-    const newAssignment: Assignment = {
-      id: Date.now(),
-      title,
-      course,
-      dueDate,
-      priority,
-      completed: false,
-    };
+    if (editingAssignmentId !== null) {
+      setAssignments(
+        assignments.map((assignment) =>
+          assignment.id === editingAssignmentId
+            ? {
+                ...assignment,
+                title,
+                course,
+                dueDate,
+                priority,
+              }
+            : assignment
+        )
+      );
 
-    setAssignments([...assignments, newAssignment]);
+      setEditingAssignmentId(null);
+    } else {
+      const newAssignment: Assignment = {
+        id: Date.now(),
+        title,
+        course,
+        dueDate,
+        priority,
+        completed: false,
+      };
+
+      setAssignments([...assignments, newAssignment]);
+    }
+
     setTitle("");
     setCourse("");
     setDueDate("");
@@ -91,6 +113,14 @@ function App() {
 
   function deleteAssignment(id: number) {
     setAssignments(assignments.filter((assignment) => assignment.id !== id));
+  }
+
+  function startEditingAssignment(assignment: Assignment) {
+    setEditingAssignmentId(assignment.id);
+    setTitle(assignment.title);
+    setCourse(assignment.course);
+    setDueDate(assignment.dueDate);
+    setPriority(assignment.priority);
   }
 
   const totalAssignments = assignments.length;
@@ -151,7 +181,11 @@ function App() {
 
       <section className="dashboard">
         <div className="card">
-          <h2>Add Assignment</h2>
+          <h2>
+            {editingAssignmentId === null
+              ? "Add Assignment"
+              : "Edit Assignment"}
+          </h2>
 
           <form onSubmit={addAssignment} className="assignment-form">
             <input
@@ -185,7 +219,9 @@ function App() {
               <option value="High">High Priority</option>
             </select>
 
-            <button type="submit">Add Assignment</button>
+            <button type="submit">
+              {editingAssignmentId === null ? "Add Assignment" : "Save Changes"}
+            </button>
           </form>
         </div>
 
@@ -230,6 +266,11 @@ function App() {
                 >
                   <div>
                     <h3>{assignment.title}</h3>
+
+                    {editingAssignmentId === assignment.id && (
+                      <p className="editing-message">Editing this assignment</p>
+                    )}
+
                     <p>{assignment.course}</p>
                     <p>Due: {assignment.dueDate}</p>
                   </div>
@@ -243,6 +284,10 @@ function App() {
 
                     <button onClick={() => toggleCompleted(assignment.id)}>
                       {assignment.completed ? "Undo" : "Done"}
+                    </button>
+
+                    <button onClick={() => startEditingAssignment(assignment)}>
+                      Edit
                     </button>
 
                     <button
