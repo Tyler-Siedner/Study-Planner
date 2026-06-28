@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import "./App.css";
 
 type Assignment = {
@@ -14,24 +14,36 @@ type FilterOption = "All" | "Active" | "Completed";
 type SortOption = "Due Date" | "Priority";
 
 function App() {
-  const [assignments, setAssignments] = useState<Assignment[]>([
-    {
-      id: 1,
-      title: "Math homework",
-      course: "Algebra",
-      dueDate: "2026-01-15",
-      priority: "High",
-      completed: false,
-    },
-    {
-      id: 2,
-      title: "Read chapter 3",
-      course: "English",
-      dueDate: "2026-01-18",
-      priority: "Medium",
-      completed: false,
-    },
-  ]);
+  const [assignments, setAssignments] = useState<Assignment[]>(() => {
+    const savedAssignments = localStorage.getItem("assignments");
+
+    if (savedAssignments) {
+      try {
+        return JSON.parse(savedAssignments) as Assignment[];
+      } catch {
+        return [];
+      }
+    }
+
+    return [
+      {
+        id: 1,
+        title: "Math homework",
+        course: "Algebra",
+        dueDate: "2026-01-15",
+        priority: "High",
+        completed: false,
+      },
+      {
+        id: 2,
+        title: "Read chapter 3",
+        course: "English",
+        dueDate: "2026-01-18",
+        priority: "Medium",
+        completed: false,
+      },
+    ];
+  });
 
   const [title, setTitle] = useState("");
   const [course, setCourse] = useState("");
@@ -39,6 +51,10 @@ function App() {
   const [priority, setPriority] = useState<"Low" | "Medium" | "High">("Medium");
   const [filter, setFilter] = useState<FilterOption>("All");
   const [sortOption, setSortOption] = useState<SortOption>("Due Date");
+
+  useEffect(() => {
+    localStorage.setItem("assignments", JSON.stringify(assignments));
+  }, [assignments]);
 
   function addAssignment(event: FormEvent) {
     event.preventDefault();
